@@ -1,16 +1,16 @@
 const express = require('express')
 const { v4: uuid } = require('uuid');
 const logger = require('../logger');
-const bookmark = require('../store');
+const bookmarks = require('../store');
 const bookmarkRouter = express.Router()
 
 const bodyParser = express.json();
 
 
 bookmarkRouter
-    .route('/bookmark')
+    .route('/bookmarks')
     .get((req, res) => {
-        res.json(bookmark)
+        res.json(bookmarks)
     })
     .post(bodyParser, (req, res) => { 
         const { title, url, rating=1, description=' '} = req.body
@@ -51,33 +51,36 @@ bookmarkRouter
             rating,
             description
         }
-        bookmark.push(newBookmark)
+        bookmarks.push(newBookmark)
         logger.info(`bookmark with id ${id} created`)
 
         res 
             .status(201)
-            .location(`http://localhost:8000/bookmark/${id}`)
+            .location(`http://localhost:8000/bookmarks/${id}`)
             .json(newBookmark)
     })
 
+
+
+
 bookmarkRouter
-    .route('/bookmark/:id')
+    .route('/bookmarks/:id')
     .get((req, res) => {
         const { id } = req.params
-        const bookmarks = bookmarks.find(b=>b.id === id)
+        const bookmark = bookmarks.find(b=>b.id === id)
 
-        if(!bookmarks){
+        if(!bookmark){
             logger.error(`Bookmark with id ${id} not found.`)
             return res  
                 .status(404)
                 .send('Bookmark not found')
         }
 
-        res.json(bookmarks)
+        res.json(bookmark)
     })
     .delete((req, res) => {
         const { id } = req.params
-        const bookmarkIndex = bookmark.findIndex(b=>b.id === id);
+        const bookmarkIndex = bookmarks.findIndex(b=>b.id === id);
 
         if(bookmarkIndex === -1){
             logger.error(`Bookmark with id ${id} not found.`)
@@ -86,7 +89,7 @@ bookmarkRouter
                 .send('Not found')
         }
 
-        bookmark.splice(bookmarkIndex, 1);
+        bookmarks.splice(bookmarkIndex, 1);
         
         logger.info(`Bookmark with id ${id} deleted.`)
 
